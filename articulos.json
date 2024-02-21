@@ -1,0 +1,34 @@
+[
+    {
+        "id": 2,
+        "titulo": "Producto modificado",
+        "precio": 300
+    },
+    {
+        "id": 3,
+        "titulo": "prueba3",
+        "descripcion": "Es una prueba",
+        "precio": "450",
+        "imagen": "imagen",
+        "code": "ab3",
+        "stock": "15"
+    },
+    {
+        "id": 4,
+        "titulo": "prueba4",
+        "descripcion": "Es una prueba",
+        "precio": "600",
+        "imagen": "imagen",
+        "code": "ab4",
+        "stock": "80"
+    },
+    {
+        "id": 5,
+        "titulo": "Nuevo producto",
+        "descripcion": "Descripción del nuevo producto",
+        "precio": 200,
+        "imagen": "imagen.jpg",
+        "code": "ABC123",
+        "stock": 10
+    }
+]
