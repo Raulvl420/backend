@@ -1,11 +1,5 @@
-const express = require("express")
-const PORT = 8080
-const app = express()
-app.listen(PORT, ()=>{
-    console.log("server OK en puerto")
-})
-
 const fs = require("fs");
+
 let rutaArchivo ="./articulos.json"
 
 let articulos = [
@@ -55,12 +49,13 @@ fs.writeFileSync(rutaArchivo, JSON.stringify(articulos,null,4))
 
 class Productos {
     constructor() {
+        this.rutaArchivo = rutaArchivo;
         this.productos = [];
     }
 
-    async cargarProductos(rutaArchivo) {
+    async cargarProductos() {
         try {
-            const contenido = await fs.promises.readFile(rutaArchivo, "utf-8");
+            const contenido = await fs.promises.readFile(this.rutaArchivo, "utf-8");
             this.productos = JSON.parse(contenido);
         } catch (error) {
             console.error("Error al cargar productos desde JSON:", error);
@@ -87,7 +82,7 @@ class Productos {
             console.log(`El producto con ID ${id} no existe.`);
         }
         //prueba
-        fs.writeFileSync(rutaArchivo, JSON.stringify(this.productos, null, 4));
+        fs.writeFileSync(this.rutaArchivo, JSON.stringify(this.productos, null, 4));
     }
 
 
@@ -126,7 +121,7 @@ class Productos {
 
     async guardarProductos() {
         try {
-            await fs.promises.writeFile(rutaArchivo, JSON.stringify(this.productos, null, 4));
+            await fs.promises.writeFile(this.rutaArchivo, JSON.stringify(this.productos, null, 4));
             console.log("Productos guardados correctamente");
         } catch (error) {
             console.error("Error al guardar productos:", error);
@@ -147,36 +142,24 @@ class Productos {
     }
 }
 
-(async () => {
-    const productos = new Productos();
-    await productos.cargarProductos(rutaArchivo);
-    console.log("Productos cargados:", productos.verProductos());
+// (async () => {
+//     const productos = new Productos();
+//     await productos.cargarProductos(this.rutaArchivo);
+//     console.log("Productos cargados:", productos.verProductos());
 
-    // Rutas
-    app.get("/productos/:id", async (req, res) => {
-        const id = parseInt(req.params.id);
-        const producto = await productos.verProductoPorId(id);
-        if (producto) {
-            res.json(producto);
-        } else {
-            res.status(404).json({ error: "Producto no encontrado" });
-        }
-    });
 
-    app.get("/productos", async (req, res) => {
-        await productos.cargarProductos(rutaArchivo);
-        const todosLosProductos = productos.verProductos();
-        res.json(todosLosProductos);
-    });
+//     // Agregar un nuevo producto
+//     await productos.addProducto("Nuevo producto", "Descripción del nuevo producto", 200, "imagen.jpg", "ABC123", 10);
 
-    // Agregar un nuevo producto
-    await productos.addProducto("Nuevo producto", "Descripción del nuevo producto", 200, "imagen.jpg", "ABC123", 10);
+//     // Eliminar un producto
+//     await productos.eliminarProducto(1);
 
-    // Eliminar un producto
-    await productos.eliminarProducto(1);
+//     // Modificar un producto
+//     await productos.modificarProducto(2, { titulo: "Producto modificado", precio: 300 });
 
-    // Modificar un producto
-    await productos.modificarProducto(2, { titulo: "Producto modificado", precio: 300 });
+//     console.log("Productos actualizados:", productos.verProductos());
+// })();
 
-    console.log("Productos actualizados:", productos.verProductos());
-})();
+module.exports = {Productos};
+
+
