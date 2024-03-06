@@ -36,4 +36,11 @@ router.put("/productos/:id", async (req, res) => {
     res.json({ message: "Producto modificado correctamente" });
 });
 
+router.get("/productos", async (req, res) => {
+    await productos.cargarProductos();
+    let limite = req.query.limit ? parseInt(req.query.limit) : 10; // Por defecto, 10 productos
+    const todosLosProductos = productos.verProductos().slice(0, limite);
+    res.json(todosLosProductos);
+});
+
 module.exports = router
