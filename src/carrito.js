@@ -1,3 +1,4 @@
+const fs = require("fs");
 
 class Carrito {
     constructor() {
@@ -22,6 +23,10 @@ class Carrito {
         if (productoEnCarrito) {
             productoEnCarrito.cantidad = nuevaCantidad;
         }
+    }
+
+    getProductos() {
+        return this.productos;
     }
 
     calcularTotal() {
