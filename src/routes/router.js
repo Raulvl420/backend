@@ -1,17 +1,30 @@
+const path = require("path");
+const http = require('http');
 const express = require('express');
-const { Productos } = require('../app.js');
-const Carrito = require('../carrito.js');
-const carrito = new Carrito();
+const socketIO = require('socket.io');
 const router = express.Router();
+const {Productos} = require('../app.js');
+const {Carrito} = require('../carrito.js');
 const rutaArchivo = "./articulos.json";
+const carrito = new Carrito();
 const productos = new Productos(rutaArchivo);
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIO(server);
+
+//INICIO
 
 
 // Muestro productos 
 router.get("/productos", async (req, res) => {
-    await productos.cargarProductos();
-    const todosLosProductos = productos.verProductos();
-    res.json(todosLosProductos);
+    try {
+        await productos.cargarProductos(); 
+        res.status(200).render("productos", { productos: productos.verProductos() });
+    } catch (error) {
+        console.error("Error al renderizar la vista:", error);
+        res.status(500).send("Error interno del servidor");
+    }
 });
 
 // Muestro producto por ID
@@ -19,9 +32,9 @@ router.get("/productos/:id", async (req, res) => {
     const id = parseInt(req.params.id);
     const producto = await productos.verProductoPorId(id);
     if (producto) {
-        res.json(producto);
+        res.render("producto", producto);
     } else {
-        res.status(404).json({ error: "Producto no encontrado" });
+        res.render("error", { message: "Producto no encontrado" });
     }
 });
 // Elimino producto por ID
@@ -52,9 +65,13 @@ router.get("/productos/:start/:limit", async (req, res) => {
 router.post('/carrito/productos/:id', (req, res) => {
     const { id } = req.params;
     const { cantidad } = req.body;
-    // agregar logica de validacion 
+    // agregar lógica de validación 
     carrito.agregarProducto({ id, cantidad });
-    res.send('Producto agregado al carrito');
+
+    // Emitir evento de WebSocket para informar a todos los clientes que se ha agregado un producto al carrito
+    io.emit('productoAgregado', carrito.getProductos());
+
+    res.json({ message: 'Producto agregado al carrito' });
 });
 
 // Eliminar un producto del carrito
@@ -75,7 +92,7 @@ router.put('/carrito/productos/:id', (req, res) => {
 // Obtener el contenido completo del carrito
 router.get('/carrito', (req, res) => {
     const contenidoCarrito = carrito.getProductos();
-    res.json(contenidoCarrito);
+    res.render('carrito', { carrito: res.locals.carrito });
 });
 
 // Obtener el total del carrito

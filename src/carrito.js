@@ -34,4 +34,4 @@ class Carrito {
     }
 }
 
-module.exports = Carrito;
+module.exports = {Carrito};
