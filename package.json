@@ -4,13 +4,15 @@
   "main": "/src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.3"
+    "express": "^4.18.3",
+    "express-handlebars": "^7.1.2",
+    "socket.io": "^4.7.4"
   },
   "description": ""
 }
