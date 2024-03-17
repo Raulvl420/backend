@@ -1,165 +1,59 @@
-const fs = require("fs");
+const path = require("path");
+const express = require('express');
+const http = require('http');
+const {Server} = require("socket.io");
+const handlebars = require("express-handlebars");
+const router = require('./routes/router.js');
+const viewRouter = require('./routes/viewRouter.js');
+const PORT = 8080;
+const app = express();
+const rutaArchivo = require("./data/articulos.json")
 
-let rutaArchivo ="./articulos.json"
+const { Productos } = require('./controllers/productos.js');
+const { Carrito } = require('./controllers/carrito.js');
+const productos = new Productos();
+const carrito = new Carrito();
 
-let articulos = [
-    {   
-        "id": 1,
-        "titulo": "prueba1",
-        "descripcion": "Es una prueba",
-        "precio": "150",
-        "imagen":"imagen",
-        "code":"ab1",
-        "stock":"10"
-    },
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-    {   
-        "id": 2,
-        "titulo": "prueba2",
-        "descripcion": "Es una prueba",
-        "precio": "100",
-        "imagen":"imagen",
-        "code":"ab2",
-        "stock":"50"
-    },
+//Handlebars
+app.engine("handlebars", handlebars.engine());
+app.set("view engine", "handlebars");
+app.set("views", path.join(__dirname, "views"));
 
-    {   
-        "id": 3,
-        "titulo": "prueba3",
-        "descripcion": "Es una prueba",
-        "precio": "450",
-        "imagen":"imagen",
-        "code":"ab3",
-        "stock":"15"
-    },
+//archivos estaticos
+app.use(express.static(path.join(__dirname, 'public')));
 
-    {   
-        "id": 4,
-        "titulo": "prueba4",
-        "descripcion": "Es una prueba",
-        "precio": "600",
-        "imagen":"imagen",
-        "code":"ab4",
-        "stock":"80"
-    }
+// Rutas
+app.use(router);
+app.use(viewRouter);
 
-];
+// Servidor HTTP y Socket.IO
+const server = http.createServer(app);
+const io = new Server(server);
 
-fs.writeFileSync(rutaArchivo, JSON.stringify(articulos,null,4))
+// Servidor
+server.listen(PORT, () => {
+    console.log(`Servidor OK en puerto ${PORT}`);
+});
 
-class Productos {
-    constructor() {
-        this.rutaArchivo = rutaArchivo;
-        this.productos = [];
-    }
+// Eventos de Socket.IO
+io.on("connection", socket => {
+    console.log(`Nuevo cliente conectado: ${socket.id}`);
+    socket.emit("bienvenida", "¡Bienvenido al sistema!");
+    socket.on('mensaje', (mensaje) => {
+        console.log('Mensaje recibido:', mensaje);
+        socket.emit('mensaje', mensaje); // El mensaje solo al cliente conectado 
+    });
 
-    async cargarProductos() {
-        try {
-            const contenido = await fs.promises.readFile(this.rutaArchivo, "utf-8");
-            this.productos = JSON.parse(contenido);
-        } catch (error) {
-            console.error("Error al cargar productos desde JSON:", error);
-        }
-    }
-    
-    async eliminarProducto(id) {
-        const indice = this.productos.findIndex(prod => prod.id === id);
-        if (indice !== -1) {
-            this.productos.splice(indice, 1);
-            await this.guardarProductos();
-        } else {
-            console.log(`El producto con ID ${id} eliminado.`);
-        }
-        
-    }
-
-    async modificarProducto(id, nuevoProducto) {
-        const indice = this.productos.findIndex(prod => prod.id === id);
-        if (indice !== -1) {
-            this.productos[indice] = { id, ...nuevoProducto };
-            await this.guardarProductos();
-        } else {
-            console.log(`El producto con ID ${id} no existe.`);
-        }
-        //prueba
-        fs.writeFileSync(this.rutaArchivo, JSON.stringify(this.productos, null, 4));
-    }
+    socket.on('disconnect', () => {
+        console.log('Usuario desconectado');
+    });
+});
 
 
-    obtenerIdMasAlto() {
-        if (this.productos.length === 0) {
-            return 0;
-        } else {
-            return Math.max(...this.productos.map(prod => prod.id));
-        }
-    }
 
-    async addProducto(titulo, descripcion, precio, imagen, code, stock) {
-        let existe = this.productos.find(prod => prod.code === code);
-        if (existe) {
-            console.log(`El producto con código ${code} ya existe.`);
-            return;
-        }
-
-        const nuevoId = this.obtenerIdMasAlto()+1;
-
-        let producto = {
-            id: nuevoId,
-            titulo: titulo,
-            descripcion: descripcion,
-            precio: precio,
-            imagen: imagen,
-            code: code,
-            stock: stock
-        };
-
-        this.productos.push(producto);
-        await this.guardarProductos();
-
-        return producto;
-    }
-
-    async guardarProductos() {
-        try {
-            await fs.promises.writeFile(this.rutaArchivo, JSON.stringify(this.productos, null, 4));
-            console.log("Productos guardados correctamente");
-        } catch (error) {
-            console.error("Error al guardar productos:", error);
-        }
-    }
-    
-    verProductos() {
-        return this.productos;
-    }
-
-    verProductoPorId(id) {
-        const producto = this.productos.find(u => u.id === id);
-        if (!producto) {
-            console.log(`No existe producto con ID ${id}`);
-            return;
-        }
-        return producto;
-    }
-}
-
-// (async () => {
-//     const productos = new Productos();
-//     await productos.cargarProductos(this.rutaArchivo);
-//     console.log("Productos cargados:", productos.verProductos());
-
-
-//     // Agregar un nuevo producto
-//     await productos.addProducto("Nuevo producto", "Descripción del nuevo producto", 200, "imagen.jpg", "ABC123", 10);
-
-//     // Eliminar un producto
-//     await productos.eliminarProducto(1);
-
-//     // Modificar un producto
-//     await productos.modificarProducto(2, { titulo: "Producto modificado", precio: 300 });
-
-//     console.log("Productos actualizados:", productos.verProductos());
-// })();
-
-module.exports = {Productos};
 
 

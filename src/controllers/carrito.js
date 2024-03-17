@@ -1,5 +1,4 @@
-const fs = require("fs");
-
+const fs = require('fs');
 class Carrito {
     constructor() {
         this.productos = [];

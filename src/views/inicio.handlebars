@@ -1,4 +1,24 @@
-<h2>
+<h1>
     HOME PAGE
-</h2>
-<hr>
+</h1>
+<br>
+
+<h2>Productos</h2>
+    <ul>
+        {{#each productos}}
+                <li>{{this.titulo}} {{this.descripcion}} - Precio: {{this.precio}} <button onclick="agregarAlCarrito('{{this.id}}')">Agregar al carrito</button></li>
+        {{/each}}
+    </ul>
+<h2>Carrito</h2>
+<br>
+
+<ul id="carrito">
+</ul>
+<br>
+
+<h3>Chat</h3>
+<ul id="mensajes"></ul>
+    <form id="formulario">
+        <input type="text" id="mensaje" autocomplete="off">
+        <button>Enviar</button>
+    </form>
